@@ -29,6 +29,7 @@ class Flotsam;
 class Outfit;
 class Projectile;
 class Visual;
+class Government;
 
 
 
@@ -94,6 +95,9 @@ private:
 	std::map<const Outfit *, int> payload;
 	// Explosion effects created when this object is destroyed.
 	std::map<const Effect *, int> explosions;
+	
+	// who damaged this object, and by how much
+	std::map<const Government *, double> damageContributions;
 };
 
 

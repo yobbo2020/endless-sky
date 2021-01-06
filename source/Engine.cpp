@@ -2045,13 +2045,28 @@ void Engine::DoCollection(Flotsam &flotsam)
 	
 	// Transfer cargo from the flotsam to the collector ship.
 	int amount = flotsam.TransferTo(collector);
-	// If the collector is not one of the player's ships, we can bail out now.
-	if(!collector->IsYours())
+	
+	// If this is irrelevant to the player, we can bail out now.
+	if(!collector->IsYours() && flotsam.Owner() != GameData::PlayerGovernment())
 		return;
 	
-	// One of your ships picked up this flotsam. Describe who it was.
-	string name = (!collector->GetParent() ? "You" :
-			"Your ship \"" + collector->Name() + "\"") + " picked up ";
+	// Describe who picked up the flotsam.
+	string name;
+	if(collector->IsYours())
+		name = (!collector->GetParent() ? "You" :
+			"Your ship \"" + collector->Name() + "\"");
+	else
+		name = "The ship \"" + collector->Name() + "\"";
+	// Indicate whether it was stolen or not.
+	bool stolen = flotsam.Owner() && flotsam.Owner() != collector->GetGovernment();
+	// Your fleet doesn't count as stealing from you, and vice versa.
+	// (Captured ships don't get their government set until landing somewhere.)
+	if(flotsam.Owner() == GameData::PlayerGovernment() && collector->IsYours())
+		stolen = false;
+	if(stolen)
+		name += " stole ";
+	else
+		name += " picked up ";
 	// Describe what they collected from this flotsam.
 	string commodity;
 	string message;
@@ -2082,9 +2097,12 @@ void Engine::DoCollection(Flotsam &flotsam)
 	// Unless something went wrong while forming the message, display it.
 	if(!message.empty())
 	{
-		int free = collector->Cargo().Free();
-		message += " (" + to_string(free) + (free == 1 ? " ton" : " tons");
-		message += " of free space remaining.)";
+		if(collector->IsYours())
+		{
+			int free = collector->Cargo().Free();
+			message += " (" + to_string(free) + (free == 1 ? " ton" : " tons");
+			message += " of free space remaining.)";
+		}
 		Messages::Add(message);
 	}
 }

@@ -144,13 +144,24 @@ bool Minable::Move(vector<Visual> &visuals, list<shared_ptr<Flotsam>> &flotsam)
 				visuals.emplace_back(*it.first, position + 2. * dp, velocity + dp, angle);
 			}
 		}
+		// Who did the most damage? They will "own" the flotsam.
+		const Government *owner = nullptr;
+		double mostDamage = 0.;
+		for(const auto &it : damageContributions)
+		{
+			if(it.second > mostDamage)
+			{
+				mostDamage = it.second;
+				owner = it.first;
+			}
+		}
 		for(const auto &it : payload)
 		{
 			// Each payload object has a 25% chance of surviving. This creates
 			// a distribution with occasional very good payoffs.
 			for(int amount = Random::Binomial(it.second, .25); amount > 0; amount -= Flotsam::TONS_PER_BOX)
 			{
-				flotsam.emplace_back(new Flotsam(it.first, min(amount, Flotsam::TONS_PER_BOX)));
+				flotsam.emplace_back(new Flotsam(it.first, min(amount, Flotsam::TONS_PER_BOX), owner));
 				flotsam.back()->Place(*this);
 			}
 		}
@@ -179,7 +190,12 @@ bool Minable::Move(vector<Visual> &visuals, list<shared_ptr<Flotsam>> &flotsam)
 // Damage this object (because a projectile collided with it).
 void Minable::TakeDamage(const Projectile &projectile)
 {
-	hull -= projectile.GetWeapon().HullDamage();
+	const double damage = projectile.GetWeapon().HullDamage();
+	hull -= damage;
+	
+	// also track who did how much damage
+	const Government *owner = projectile.GetGovernment();
+	damageContributions[owner] += damage;
 }
 
 

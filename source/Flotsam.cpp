@@ -32,8 +32,8 @@ const int Flotsam::TONS_PER_BOX = 5;
 
 
 // Constructors for flotsam carrying either a commodity or an outfit.
-Flotsam::Flotsam(const string &commodity, int count)
-	: commodity(commodity), count(count)
+Flotsam::Flotsam(const string &commodity, int count, const Government *owner)
+	: commodity(commodity), count(count), owner(owner)
 {
 	lifetime = Random::Int(300) + 360;
 	// Scale lifetime in proportion to the expected amount per box.
@@ -43,8 +43,8 @@ Flotsam::Flotsam(const string &commodity, int count)
 
 
 
-Flotsam::Flotsam(const Outfit *outfit, int count)
-	: outfit(outfit), count(count)
+Flotsam::Flotsam(const Outfit *outfit, int count, const Government *owner)
+	: outfit(outfit), count(count), owner(owner)
 {
 	// The more the outfit costs, the faster this flotsam should disappear.
 	int lifetimeBase = 300000000 / (outfit->Cost() * count + 1000000);
@@ -149,6 +149,14 @@ int Flotsam::Count() const
 double Flotsam::UnitSize() const
 {
 	return outfit ? outfit->Mass() : 1.;
+}
+
+
+
+// This is the attributed owner of this flotsam. Can be null for none.
+const Government *Flotsam::Owner() const
+{
+	return owner;
 }
 
 

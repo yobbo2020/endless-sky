@@ -30,8 +30,8 @@ class Visual;
 class Flotsam : public Body {
 public:
 	// Constructors for flotsam carrying either a commodity or an outfit.
-	Flotsam(const std::string &commodity, int count);
-	Flotsam(const Outfit *outfit, int count);
+	Flotsam(const std::string &commodity, int count, const Government *owner = nullptr);
+	Flotsam(const Outfit *outfit, int count, const Government *owner = nullptr);
 	
 	/* Functions provided by the Body base class:
 	Frame GetFrame(int step = -1) const;
@@ -62,6 +62,8 @@ public:
 	// This is how big one "unit" of the flotsam is (in tons). If a ship has
 	// less than this amount of space, it can't pick up anything here.
 	double UnitSize() const;
+	// This is the attributed owner of this flotsam. Can be null for none.
+	const Government *Owner() const;
 	
 	// Transfer contents to the collector ship. The flotsam velocity is
 	// stabilized in proportion to the amount being transferred.
@@ -81,6 +83,7 @@ private:
 	std::string commodity;
 	const Outfit *outfit = nullptr;
 	int count = 0;
+	const Government *owner = nullptr;
 };
 
 
